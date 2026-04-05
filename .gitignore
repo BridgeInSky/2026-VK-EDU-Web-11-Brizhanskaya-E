@@ -17,9 +17,12 @@ htmlcov/
 *.log
 *.sqlite3
 db.sqlite3
-migrations/
 *.pot
 local_settings.py
+
+# Migrations Django 
+*/migrations/__pycache__/
+*/migrations/*.py[cod]
 
 # IDE
 .idea/
@@ -27,8 +30,6 @@ local_settings.py
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
 
 # OS
 .DS_Store
@@ -45,3 +46,9 @@ media/
 .env
 .env.local
 *.pid
+
+# Node.js 
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log

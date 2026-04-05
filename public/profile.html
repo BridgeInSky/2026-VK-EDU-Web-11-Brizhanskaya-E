@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AskMe - Профиль пользователя</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Собственные стили -->
+    <link href="static/css/style.css" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
+</head>
+<body>
+    <!-- HEADER (для авторизованного пользователя) -->
+    <header class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Логотип -->
+                <div class="col-md-3 col-12 text-center text-md-start mb-3 mb-md-0">
+                    <a href="index.html" class="text-white text-decoration-none">
+                        <h1 class="h3 mb-0">AskMe</h1>
+                        <small>Сообщество вопросов и ответов</small>
+                    </a>
+                </div>
+                
+                <!-- Поиск -->
+                <div class="col-md-6 col-12 mb-3 mb-md-0">
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Поиск вопросов..." aria-label="Search">
+                        <button class="btn btn-outline-light" type="submit">Найти</button>
+                    </form>
+                </div>
+                
+                <!-- Юзерблок (авторизованный пользователь) -->
+                <div class="col-md-3 col-12 text-center text-md-end">
+                    <div class="d-flex justify-content-center justify-content-md-end align-items-center gap-3">
+                        <a href="ask.html" class="btn btn-primary">Задать вопрос</a>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <img src="\public\static\img\avatars\Man.png" alt="Avatar" class="rounded-circle" width="30" height="30">
+                                Алексей
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="profile.html">Мой профиль</a></li>
+                                <li><a class="dropdown-item" href="#">Мои вопросы</a></li>
+                                <li><a class="dropdown-item" href="#">Мои ответы</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="index.html">Выйти</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="py-4">
+        <div class="container">
+            <div class="row">
+                <!-- Левая колонка: форма профиля -->
+                <div class="col-lg-8 col-12 mx-auto">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Настройки профиля</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Сообщение об успешном сохранении -->
+                            <div class="alert alert-success" id="success-message" style="display: none;">
+                                Изменения успешно сохранены!
+                            </div>
+                            
+                            <!-- Сообщение об ошибке -->
+                            <div class="alert alert-danger" id="error-message" style="display: none;">
+                                Пожалуйста, исправьте ошибки в форме.
+                            </div>
+                            
+                            <form id="profile-form">
+                                <!-- Блок аватарки -->
+                                <div class="text-center mb-4">
+                                    <div class="position-relative d-inline-block">
+                                        <img src="\public\static\img\avatars\Man.png" alt="Avatar" 
+                                             class="rounded-circle mb-2" id="avatar-preview" width="150" height="150"
+                                             style="object-fit: cover; border: 3px solid #7f648d;">
+                                        <div class="mt-2">
+                                            <label for="avatar-upload" class="btn btn-sm btn-outline-secondary">
+                                                Изменить аватар
+                                            </label>
+                                            <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <div class="form-text">Рекомендуемый размер: 200x200 пикселей. Нажмите на кнопку, чтобы изменить.</div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstname" class="form-label">Имя</label>
+                                        <input type="text" class="form-control" id="firstname" value="Алексей">
+                                        <div class="form-text">Ваше реальное имя.</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastname" class="form-label">Фамилия</label>
+                                        <input type="text" class="form-control" id="lastname" value="Иванов">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Никнейм *</label>
+                                    <input type="text" class="form-control" id="username" value="alex_dev" required>
+                                    <div class="form-text">Имя пользователя, которое отображается на сайте. Только буквы, цифры и подчеркивания.</div>
+                                    <div class="invalid-feedback">
+                                        Никнейм должен содержать минимум 3 символа.
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" value="alexey@example.com" readonly>
+                                    <div class="form-text text-warning">Email не может быть изменен. Для смены email обратитесь к администратору.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">О себе</label>
+                                    <textarea class="form-control" id="bio" rows="4" 
+                                              placeholder="Расскажите о себе, своих интересах и expertise..."></textarea>
+                                    <div class="form-text">Максимум 500 символов. Markdown поддерживается.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="website" class="form-label">Веб-сайт</label>
+                                    <input type="url" class="form-control" id="website" placeholder="https://example.com">
+                                    <div class="form-text">Ссылка на ваш личный сайт или портфолио.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Местоположение</label>
+                                    <input type="text" class="form-control" id="location" placeholder="Москва, Россия">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="job" class="form-label">Профессия</label>
+                                    <input type="text" class="form-control" id="job" placeholder="Разработчик Python">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Уведомления</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="notify_email" checked>
+                                        <label class="form-check-label" for="notify_email">
+                                            Получать уведомления о новых ответах на email
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="notify_site" checked>
+                                        <label class="form-check-label" for="notify_site">
+                                            Показывать уведомления на сайте
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <h5 class="mb-3">Смена пароля</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="current_password" class="form-label">Текущий пароль</label>
+                                    <input type="password" class="form-control" id="current_password" 
+                                           placeholder="Введите текущий пароль">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="new_password" class="form-label">Новый пароль</label>
+                                        <input type="password" class="form-control" id="new_password" 
+                                               placeholder="Минимум 6 символов">
+                                        <div class="form-text">Оставьте пустым, если не хотите менять пароль.</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="confirm_new_password" class="form-label">Подтверждение пароля</label>
+                                        <input type="password" class="form-control" id="confirm_new_password" 
+                                               placeholder="Повторите новый пароль">
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a href="index.html" class="btn btn-secondary">Отмена</a>
+                                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                                </div>
+                            </form>
+                            
+                            <hr class="mt-4">
+                            
+                            <div class="text-center">
+                                <button class="btn btn-outline-danger btn-sm" id="delete-account-btn">
+                                    Удалить аккаунт
+                                </button>
+                                <div class="form-text text-muted mt-2">
+                                    Внимание: удаление аккаунта необратимо. Все ваши вопросы и ответы будут удалены.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Правая колонка: SIDEBAR -->
+                <div class="col-lg-4 col-12 mt-4 mt-lg-0">
+                    <!-- Статистика пользователя -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Моя статистика</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6 mb-3">
+                                    <h3 class="mb-0 text-secondary">24</h3>
+                                    <small class="text-muted">Вопросов</small>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <h3 class="mb-0 text-secondary">156</h3>
+                                    <small class="text-muted">Ответов</small>
+                                </div>
+                                <div class

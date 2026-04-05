@@ -1,0 +1,180 @@
+/* Общие стили */
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+}
+
+:root {
+
+    --bs-primary: #7d5289;
+    --bs-warning: #5a0540 !important;
+
+    --bs-body-bg: #fdfdfd;
+    --bs-body-color: #1d1d1d;
+
+    --bs-border-color: #dee2e6;    
+    --bs-focus-ring-color: rgba(108, 92, 231, 0.25);
+
+    --bs-secondary-color: #3c3c3c;
+}
+
+.btn-primary:hover {
+    background-color: #683b72 !important;
+    border-color: #3b0d50 !important;
+}
+
+/* Для всех пагинаций на сайте */
+.page-item.active .page-link {
+    background-color: #b6adba !important;
+    border-color: #aaa6a5 !important;
+}
+
+.page-link {
+    color: #7d5289 !important;
+}
+
+.page-link:hover {
+    color: #440552 !important;
+}
+
+/*Questions*/
+.card-title a {
+    color: #7d5289;
+}
+
+.card-title a:hover{
+    color: #442a4a;
+}
+
+/* Стили для списка участников */
+.member-list a {
+    color: #363236; 
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block; 
+}
+
+.member-list a:hover {
+    color: #0d0c0d;
+    text-decoration: underline;
+    transform: translateX(4px); 
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+
+}
+
+.bg-dark {
+    background-color: #361c3f !important;
+}
+
+.bg-primary{
+    background-color: #7f6b89 !important;
+}
+
+.text-white {
+    color: #ffffff !important;
+}
+
+.text-center p a {
+    color: #585358;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.text-center p a:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+/* Стиль из GoogleFont для основного текста страниц*/
+
+.montserrat-style {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.question-card {
+    transition: transform 0.2s;
+    margin-bottom: 1rem;
+}
+
+.question-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(28, 102, 21, 0.1);
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+}
+
+.vote-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.vote-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.vote-count {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .question-card .row {
+        flex-direction: column;
+    }
+    
+    .vote-widget {
+        flex-direction: row;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    .card-title {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .badge {
+        font-size: 0.8rem;
+    }
+}

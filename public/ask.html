@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AskMe - Задать вопрос</title>
+    
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/style.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3 col-12 text-center text-md-start mb-3 mb-md-0">
+                    <a href="index.html" class="text-white text-decoration-none">
+                        <h1 class="h3 mb-0">AskMe</h1>
+                        <small>Сообщество вопросов и ответов</small>
+                    </a>
+                </div>
+                <div class="col-md-6 col-12 mb-3 mb-md-0">
+                    <form class="d-flex">
+                        <input class="form-control me-2" type="search" placeholder="Поиск вопросов...">
+                        <button class="btn btn-outline-light" type="submit">Найти</button>
+                    </form>
+                </div>
+                <div class="col-md-3 col-12 text-center text-md-end">
+                    <div class="d-flex justify-content-center justify-content-md-end align-items-center gap-3">
+                        <a href="ask.html" class="btn btn-primary">Задать вопрос</a>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <img src="\public\static\img\avatars\avatar-default.png" alt="Avatar" class="rounded-circle" width="30" height="30">
+                                Гость
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="login.html">Войти</a></li>
+                                <li><a class="dropdown-item" href="signup.html">Регистрация</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-12 mx-auto">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Задать новый вопрос</h4>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Заголовок вопроса *</label>
+                                    <input type="text" class="form-control" id="title" 
+                                           placeholder="Кратко опишите суть вопроса">
+                                    <div class="form-text">Минимум 10 символов, максимум 200 символов.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="text" class="form-label">Текст вопроса *</label>
+                                    <textarea class="form-control" id="text" rows="6" 
+                                              placeholder="Подробно опишите ваш вопрос..."></textarea>
+                                    <div class="form-text">Минимум 20 символов, максимум 5000 символов.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="tags" class="form-label">Теги</label>
+                                    <input type="text" class="form-control" id="tags" 
+                                           placeholder="django, python, bootstrap">
+                                    <div class="form-text">Укажите теги через запятую. Не более 5 тегов.</div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="index.html" class="btn btn-secondary">Отмена</a>
+                                    <button type="submit" class="btn btn-primary">Опубликовать вопрос</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-dark text-white py-3 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">© 2026 AskMe. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="static/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/main.js"></script>
+</body>
+</html>
