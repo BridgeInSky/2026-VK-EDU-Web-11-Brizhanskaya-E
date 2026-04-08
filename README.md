@@ -24,3 +24,27 @@ python -m http.server 8000
 4. login.html - Форма входа
 5. signup.html - Форма регистрации
 6. profile.html - Профиль пользователя
+
+#Домашнее задание 2 - Routing, Django, шаблоны
+
+
+### Как запустить проект
+
+```bash
+# 1. Клонировать репозиторий
+git clone <url-репозитория>
+cd ask_me
+
+# 2. Создать виртуальное окружение
+python -m venv venv
+source venv/bin/activate  # для Linux/Mac
+# venv\Scripts\activate  # для Windows
+
+# 3. Установить зависимости
+pip install django
+
+# 4. Применить миграции
+python manage.py migrate
+
+# 5. Запустить сервер
+python manage.py runserver
