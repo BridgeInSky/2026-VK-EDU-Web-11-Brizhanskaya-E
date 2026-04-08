@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Профиль пользователя{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Настройки профиля</h4>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" action="{% url 'app:profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Блок аватарки -->
+                <div class="text-center mb-4">
+                    <div class="position-relative d-inline-block">
+                        <img src="
+                            {% if user.profile.avatar %}
+                                {{ user.profile.avatar.url }}
+                            {% else %}
+                                {% static 'img/avatars/Man.png' %}
+                            {% endif %}
+                        " alt="Avatar" class="rounded-circle mb-2" id="avatar-preview" width="150" height="150"
+                           style="object-fit: cover; border: 3px solid #7f648d;">
+                        <div class="mt-2">
+                            <label for="avatar" class="btn btn-sm btn-outline-secondary">
+                                Изменить аватар
+                            </label>
+                            <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="form-text">Рекомендуемый размер: 200x200 пикселей. Нажмите на кнопку, чтобы изменить.</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="first_name" class="form-label">Имя</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" 
+                               value="{{ user.first_name|default:'' }}">
+                        <div class="form-text">Ваше реальное имя.</div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="last_name" class="form-label">Фамилия</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" 
+                               value="{{ user.last_name|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Никнейм *</label>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           value="{{ user.username }}" required>
+                    <div class="form-text">Имя пользователя, которое отображается на сайте.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" 
+                           value="{{ user.email }}" readonly>
+                    <div class="form-text text-warning">Email не может быть изменен.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="bio" class="form-label">О себе</label>
+                    <textarea class="form-control" id="bio" name="bio" rows="4" 
+                              placeholder="Расскажите о себе">{{ user.profile.bio|default:'' }}</textarea>
+                    <div class="form-text">Максимум 500 символов.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="website" class="form-label">Веб-сайт</label>
+                    <input type="url" class="form-control" id="website" name="website" 
+                           value="{{ user.profile.website|default:'' }}" placeholder="https://example.com">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="location" class="form-label">Местоположение</label>
+                    <input type="text" class="form-control" id="location" name="location" 
+                           value="{{ user.profile.location|default:'' }}" placeholder="Москва, Россия">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="job" class="form-label">Профессия</label>
+                    <input type="text" class="form-control" id="job" name="job" 
+                           value="{{ user.profile.job|default:'' }}" placeholder="Разработчик Python">
+                </div>
+                
+                <hr>
+                
+                <h5 class="mb-3">Смена пароля</h5>
+                
+                <div class="mb-3">
+                    <label for="current_password" class="form-label">Текущий пароль</label>
+                    <input type="password" class="form-control" id="current_password" name="current_password" 
+                           placeholder="Введите текущий пароль">
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="new_password" class="form-label">Новый пароль</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" 
+                               placeholder="Минимум 6 символов">
+                        <div class="form-text">Оставьте пустым, если не хотите менять пароль.</div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="confirm_new_password" class="form-label">Подтверждение пароля</label>
+                        <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" 
+                               placeholder="Повторите новый пароль">
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'app:index' %}" class="btn btn-secondary">Отмена</a>
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                </div>
+            </form>
+            
+            <hr class="mt-4">
+            
+            <div class="text-center">
+                <button class="btn btn-outline-danger btn-sm" id="delete-account-btn">
+                    Удалить аккаунт
+                </button>
+                <div class="form-text text-muted mt-2">
+                    Внимание: удаление аккаунта необратимо.
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Превью аватарки при загрузке
+    document.getElementById('avatar')?.addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatar-preview').src = e.target.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    });
+    
+    // Кнопка выбора файла
+    document.querySelector('label[for="avatar"]')?.addEventListener('click', function() {
+        document.getElementById('avatar').click();
+    });
+</script>
+{% endblock %}

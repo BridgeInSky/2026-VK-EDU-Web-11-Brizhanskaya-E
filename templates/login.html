@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block sidebar %}
+    <!-- На странице логина показываем sidebar только если не в auth режиме -->
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Вход в систему</h4>
+        </div>
+        <div class="card-body">
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    Неверный email или пароль. Пожалуйста, попробуйте снова.
+                </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'app:login' %}">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Имя пользователя *</label>
+                    <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                           id="username" name="username" value="{{ form.username.value|default:'' }}"
+                           placeholder="Введите имя пользователя" required>
+                    <div class="form-text">Введите имя пользователя, которое использовали при регистрации.</div>
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль *</label>
+                    <input type="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                           id="password" name="password" placeholder="Введите пароль" required>
+                    <div class="form-text">Пароль чувствителен к регистру.</div>
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                    <label class="form-check-label" for="remember">Запомнить меня</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Войти</button>
+            </form>
+            
+            <hr>
+            
+            <div class="text-center">
+                <p class="mb-2">Нет аккаунта? <a href="{% url 'app:signup' %}">Зарегистрируйтесь</a></p>
+                <a href="#" class="small text-muted">Забыли пароль?</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

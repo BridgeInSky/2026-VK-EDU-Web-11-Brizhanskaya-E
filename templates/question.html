@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ question.title|default:"Вопрос" }}{% endblock %}
+
+{% block content %}
+    <!-- САМ ВОПРОС -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-auto">
+                    <div class="vote-widget">
+                        <button class="vote-btn like">👍</button>
+                        <span class="vote-count">{{ question.likes }}</span>
+                        <button class="vote-btn dislike">👎</button>
+                    </div>
+                </div>
+                <div class="col">
+                    <h2 class="card-title">{{ question.title }}</h2>
+                    <p class="card-text">{{ question.text }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            Теги:
+                            {% for tag in question.tags %}
+                                <a href="{% url 'app:tag' tag %}" class="badge bg-secondary">{{ tag }}</a>
+                            {% endfor %}
+                        </div>
+                        <div class="text-muted">
+                            <img src="{% static 'img/avatars/Man.png' %}" class="rounded-circle" width="32" height="32">
+                            {{ question.author }} | {{ question.created_at }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОТВЕТЫ -->
+    <h3 class="mb-3">Ответы ({{ page.paginator.count }})</h3>
+
+    <div class="answers-list mb-4">
+        {% for answer in page %}
+            <div class="card mb-3" id="answer-{{ answer.id }}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-auto">
+                            <div class="vote-widget">
+                                <button class="vote-btn like">👍</button>
+                                <span class="vote-count">{{ answer.likes }}</span>
+                                <button class="vote-btn dislike">👎</button>
+                            </div>
+                            {% if answer.is_correct %}
+                                <div class="mt-2 text-center">
+                                    <button class="btn btn-sm btn-outline-success correct-answer">✓ Правильный ответ</button>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <p class="card-text">{{ answer.text }}</p>
+                            <div class="text-muted small">
+                                <img src="{% static 'img/avatars/avatar-default.png' %}" class="rounded-circle" width="24" height="24">
+                                {{ answer.author }} | {{ answer.created_at }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-info">Ответов пока нет. Будьте первым, кто ответит!</div>
+        {% endfor %}
+    </div>
+
+    <!-- ФОРМА ДОБАВЛЕНИЯ ОТВЕТА -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Ваш ответ</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'app:question' question.id %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="answerText" class="form-label">Текст ответа</label>
+                    <textarea class="form-control" id="answerText" name="text" rows="5" 
+                              placeholder="Напишите ваш ответ здесь..."></textarea>
+                    <div class="form-text">Минимум 10 символов, максимум 5000 символов.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить ответ</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Пагинация ответов -->
+    {% include 'pagination.html' with page=page %}
+{% endblock %}

@@ -1,0 +1,106 @@
+# Виртуальное окружение
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*
+
+# Python-компиляция
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Базы данных
+*.db
+*.sqlite3
+
+# Файлы IDE и редакторов
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+*.sublime-*
+.project
+.pydevproject
+
+# Файлы окружения
+.env
+.env.local
+.env.*.local
+
+# Логи
+*.log
+logs/
+log/
+
+# Временные файлы
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Файлы настроек пакетов
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Файлы тестов
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Файлы систем
+Thumbs.db
+Desktop.ini
+*.DS_Store
+
+# Файлы загрузок и медиа (кроме примера)
+uploads/*
+!uploads/.gitkeep
+media/*
+!media/.gitkeep
+
+# Секретные ключи
+*.key
+*.pem
+*.crt
+
+# Файлы настроек инструментов
+.tox/
+.mypy_cache/
+.ruff_cache/

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block navigation %}
+    <!-- Навигация уже в base.html, но можно добавить дополнительную -->
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    <div class="questions-list">
+        {% for question in page %}
+            <div class="card question-card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-auto">
+                            <div class="vote-widget text-center">
+                                <button class="btn btn-sm btn-outline-success vote-btn like">▲</button>
+                                <div class="vote-count fw-bold my-1">{{ question.likes }}</div>
+                                <button class="btn btn-sm btn-outline-danger vote-btn dislike">▼</button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h5 class="card-title">
+                                <a href="{% url 'app:question' question.id %}" class="text-decoration-none">{{ question.title }}</a>
+                            </h5>
+                            <p class="card-text text-muted">{{ question.text|truncatewords:30 }}</p>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <span class="text-muted">
+                                        <i class="bi bi-chat"></i> Ответов: {{ question.answer_count }}
+                                    </span>
+                                    <span class="text-muted ms-3">
+                                        🏷️ Теги:
+                                        {% for tag in question.tags %}
+                                            <a href="{% url 'app:tag' tag %}" class="badge bg-secondary text-decoration-none">{{ tag }}</a>
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                <div class="text-muted small">
+                                    <img src="{% static 'img/avatars/Man.png' %}" class="rounded-circle" width="24" height="24">
+                                    {{ question.author }} | {{ question.created_at }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-info text-center">
+                <h5>📭 Вопросов пока нет</h5>
+                <p>Будьте первым, кто задаст вопрос!</p>
+                <a href="{% url 'app:ask' %}" class="btn btn-primary">Задать вопрос</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% include 'pagination.html' with page=page %}
+{% endblock %}
