@@ -37,6 +37,7 @@ cd ask_me
 # 2. Создать виртуальное окружение
 python -m venv venv
 source venv/bin/activate  # для Linux/Mac
+source venv/Scripts/activate # для Windows в GitBash
 # venv\Scripts\activate  # для Windows
 
 # 3. Установить зависимости
