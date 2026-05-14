@@ -27,7 +27,6 @@ python -m http.server 8000
 
 #Домашнее задание 2 - Routing, Django, шаблоны
 
-
 ### Как запустить проект
 
 ```bash
