@@ -10,9 +10,11 @@
             <div class="row">
                 <div class="col-auto">
                     <div class="vote-widget text-center">
-                        <button class="btn btn-sm btn-outline-success vote-btn like">▲</button>
+                        <button class="btn btn-sm btn-outline-success vote-btn like" 
+                                {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▲</button>
                         <div class="vote-count fw-bold my-1">{{ question.rating }}</div>
-                        <button class="btn btn-sm btn-outline-danger vote-btn dislike">▼</button>
+                        <button class="btn btn-sm btn-outline-danger vote-btn dislike"
+                                {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▼</button>
                     </div>
                 </div>
                 <div class="col">
@@ -26,7 +28,13 @@
                             {% endfor %}
                         </div>
                         <div class="text-muted">
-                            <img src="{% static 'img/avatars/Man.png' %}" class="rounded-circle" width="32" height="32">
+                            <img src="
+                                {% if question.author.profile.avatar %}
+                                    {{ question.author.profile.avatar.url }}
+                                {% else %}
+                                    {% static 'img/avatars/avatar-default.png' %}
+                                {% endif %}
+                            " class="rounded-circle" width="32" height="32">
                             {{ question.author.username }} | {{ question.created_at|date:"d.m.Y H:i" }}
                         </div>
                     </div>
@@ -39,15 +47,17 @@
     <h3 class="mb-3">Ответы ({{ page.paginator.count }})</h3>
 
     <div class="answers-list mb-4">
-        {% for answer in answers %}
+        {% for answer in page.object_list %}
             <div class="card mb-3" id="answer-{{ answer.id }}">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-auto">
                             <div class="vote-widget text-center">
-                                <button class="btn btn-sm btn-outline-success vote-btn like">▲</button>
+                                <button class="btn btn-sm btn-outline-success vote-btn like"
+                                        {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▲</button>
                                 <div class="vote-count fw-bold my-1">{{ answer.rating }}</div>
-                                <button class="btn btn-sm btn-outline-danger vote-btn dislike">▼</button>
+                                <button class="btn btn-sm btn-outline-danger vote-btn dislike"
+                                        {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▼</button>
                             </div>
                             {% if answer.is_correct %}
                                 <div class="mt-2 text-center">
@@ -58,7 +68,13 @@
                         <div class="col">
                             <p class="card-text">{{ answer.text }}</p>
                             <div class="text-muted small">
-                                <img src="{% static 'img/avatars/avatar-default.png' %}" class="rounded-circle" width="24" height="24">
+                                <img src="
+                                    {% if answer.author.profile.avatar %}
+                                        {{ answer.author.profile.avatar.url }}
+                                    {% else %}
+                                        {% static 'img/avatars/avatar-default.png' %}
+                                    {% endif %}
+                                " class="rounded-circle" width="24" height="24">
                                 {{ answer.author.username }} | {{ answer.created_at|date:"d.m.Y H:i" }}
                             </div>
                         </div>
@@ -70,24 +86,49 @@
         {% endfor %}
     </div>
 
-    <!-- ФОРМА ДОБАВЛЕНИЯ ОТВЕТА -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Ваш ответ</h5>
+    <!-- ФОРМА ДОБАВЛЕНИЯ ОТВЕТА (только для авторизованных) -->
+    {% if user.is_authenticated %}
+        <div class="card mt-4" id="answer-form">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">✏️ Ваш ответ</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" action="{% url 'app:answer_add' question.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ answer_form.text }}
+                        {% if answer_form.text.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in answer_form.text.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Минимум 10 символов, максимум 5000 символов.</div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Отправить ответ</button>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <form method="post" action="{% url 'app:question' question.id %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="answerText" class="form-label">Текст ответа</label>
-                    <textarea class="form-control" id="answerText" name="text" rows="5" 
-                              placeholder="Напишите ваш ответ здесь..."></textarea>
-                    <div class="form-text">Минимум 10 символов, максимум 5000 символов.</div>
-                </div>
-                <button type="submit" class="btn btn-primary">Отправить ответ</button>
-            </form>
+    {% else %}
+        <div class="card mt-4 bg-light">
+            <div class="card-body text-center">
+                <p class="mb-0">
+                    <a href="{% url 'app:login' %}?next={{ request.path }}">Войдите</a> или 
+                    <a href="{% url 'app:signup' %}">зарегистрируйтесь</a>, чтобы оставить ответ
+                </p>
+            </div>
         </div>
-    </div>
+    {% endif %}
 
     <!-- Пагинация ответов -->
     {% include 'pagination.html' with page=page %}
