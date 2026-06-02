@@ -1,5 +1,6 @@
 # Виртуальное окружение
 venv/
+venv_new/
 env/
 ENV/
 env.bak/
@@ -7,11 +8,16 @@ venv.bak/
 pythonenv*
 
 # Python-компиляция
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
-__pycache__/
+.Python
 *.so
+*.egg
+*.egg-info/
+dist/
+build/
 
 # Django
 *.log
@@ -43,11 +49,13 @@ staticfiles/
 .env
 .env.local
 .env.*.local
+.env.docker
 
 # Логи
 *.log
 logs/
 log/
+*.log
 
 # Временные файлы
 *.tmp
@@ -104,3 +112,10 @@ media/*
 .tox/
 .mypy_cache/
 .ruff_cache/
+
+# Медиа файлы (пользовательские загрузки)
+media/
+
+# Системные файлы
+.DS_Store
+Thumbs.db

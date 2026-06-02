@@ -9,10 +9,10 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-auto">
-                    <div class="vote-widget">
-                        <button class="vote-btn like">👍</button>
-                        <span class="vote-count">{{ question.likes }}</span>
-                        <button class="vote-btn dislike">👎</button>
+                    <div class="vote-widget text-center">
+                        <button class="btn btn-sm btn-outline-success vote-btn like">▲</button>
+                        <div class="vote-count fw-bold my-1">{{ question.rating }}</div>
+                        <button class="btn btn-sm btn-outline-danger vote-btn dislike">▼</button>
                     </div>
                 </div>
                 <div class="col">
@@ -21,13 +21,13 @@
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div>
                             Теги:
-                            {% for tag in question.tags %}
-                                <a href="{% url 'app:tag' tag %}" class="badge bg-secondary">{{ tag }}</a>
+                            {% for tag in question.tags.all %}
+                                <a href="{% url 'app:tag' tag.name %}" class="badge bg-secondary text-decoration-none">{{ tag.name }}</a>
                             {% endfor %}
                         </div>
                         <div class="text-muted">
                             <img src="{% static 'img/avatars/Man.png' %}" class="rounded-circle" width="32" height="32">
-                            {{ question.author }} | {{ question.created_at }}
+                            {{ question.author.username }} | {{ question.created_at|date:"d.m.Y H:i" }}
                         </div>
                     </div>
                 </div>
@@ -39,19 +39,19 @@
     <h3 class="mb-3">Ответы ({{ page.paginator.count }})</h3>
 
     <div class="answers-list mb-4">
-        {% for answer in page %}
+        {% for answer in answers %}
             <div class="card mb-3" id="answer-{{ answer.id }}">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-auto">
-                            <div class="vote-widget">
-                                <button class="vote-btn like">👍</button>
-                                <span class="vote-count">{{ answer.likes }}</span>
-                                <button class="vote-btn dislike">👎</button>
+                            <div class="vote-widget text-center">
+                                <button class="btn btn-sm btn-outline-success vote-btn like">▲</button>
+                                <div class="vote-count fw-bold my-1">{{ answer.rating }}</div>
+                                <button class="btn btn-sm btn-outline-danger vote-btn dislike">▼</button>
                             </div>
                             {% if answer.is_correct %}
                                 <div class="mt-2 text-center">
-                                    <button class="btn btn-sm btn-outline-success correct-answer">✓ Правильный ответ</button>
+                                    <span class="badge bg-success">✓ Правильный ответ</span>
                                 </div>
                             {% endif %}
                         </div>
@@ -59,7 +59,7 @@
                             <p class="card-text">{{ answer.text }}</p>
                             <div class="text-muted small">
                                 <img src="{% static 'img/avatars/avatar-default.png' %}" class="rounded-circle" width="24" height="24">
-                                {{ answer.author }} | {{ answer.created_at }}
+                                {{ answer.author.username }} | {{ answer.created_at|date:"d.m.Y H:i" }}
                             </div>
                         </div>
                     </div>
