@@ -3,21 +3,19 @@
 
 {% block title %}Новые вопросы{% endblock %}
 
-{% block navigation %}
-    {{ block.super }}
-{% endblock %}
-
 {% block content %}
     <div class="questions-list">
-        {% for question in questions %}
+        {% for question in page.object_list %}
             <div class="card question-card mb-3">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-auto">
                             <div class="vote-widget text-center">
-                                <button class="btn btn-sm btn-outline-success vote-btn like">▲</button>
+                                <button class="btn btn-sm btn-outline-success vote-btn like" 
+                                        {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▲</button>
                                 <div class="vote-count fw-bold my-1">{{ question.rating }}</div>
-                                <button class="btn btn-sm btn-outline-danger vote-btn dislike">▼</button>
+                                <button class="btn btn-sm btn-outline-danger vote-btn dislike"
+                                        {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▼</button>
                             </div>
                         </div>
                         <div class="col">
@@ -28,17 +26,23 @@
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <span class="text-muted">
-                                        <i class="bi bi-chat"></i> Ответов: {{ question.answers.count }}
+                                        💬 Ответов: {{ question.answers.count }}
                                     </span>
                                     <span class="text-muted ms-3">
                                         🏷️ Теги:
-                                        {% for tag in question.tags.all %}
+                                        {% for tag in question.tags.all|slice:":3" %}
                                             <a href="{% url 'app:tag' tag.name %}" class="badge bg-secondary text-decoration-none">{{ tag.name }}</a>
                                         {% endfor %}
                                     </span>
                                 </div>
                                 <div class="text-muted small">
-                                    <img src="{% static 'img/avatars/Man.png' %}" class="rounded-circle" width="24" height="24">
+                                    <img src="
+                                        {% if question.author.profile.avatar %}
+                                            {{ question.author.profile.avatar.url }}
+                                        {% else %}
+                                            {% static 'img/avatars/avatar-default.png' %}
+                                        {% endif %}
+                                    " class="rounded-circle" width="24" height="24" style="object-fit: cover;">
                                     {{ question.author.username }} | {{ question.created_at|date:"d.m.Y H:i" }}
                                 </div>
                             </div>
@@ -48,9 +52,13 @@
             </div>
         {% empty %}
             <div class="alert alert-info text-center">
-                <h5>📭 Вопросов пока нет</h5>
+                <h5>❓ Пока нет ни одного вопроса</h5>
                 <p>Будьте первым, кто задаст вопрос!</p>
-                <a href="{% url 'app:ask' %}" class="btn btn-primary">Задать вопрос</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'app:ask' %}" class="btn btn-primary">Задать вопрос</a>
+                {% else %}
+                    <a href="{% url 'app:login' %}?next={% url 'app:ask' %}" class="btn btn-primary">Войдите, чтобы задать вопрос</a>
+                {% endif %}
             </div>
         {% endfor %}
     </div>

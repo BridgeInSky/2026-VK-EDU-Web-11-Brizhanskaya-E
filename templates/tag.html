@@ -1,23 +1,36 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Вопросы по тегу: {{ tag }}{% endblock %}
+{% block title %}Вопросы по тегу: {{ tag_name }}{% endblock %}
+
+{% block navigation %}
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'app:index' %}">🔥 Новые вопросы</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'app:hot' %}">⭐ Лучшие вопросы</a>
+        </li>
+    </ul>
+{% endblock %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Вопросы с тегом: <span class="badge bg-primary">{{ tag }}</span></h2>
+        <h2>Вопросы с тегом: <span class="badge bg-primary">{{ tag_name }}</span></h2>
     </div>
 
     <div class="questions-list">
-        {% for question in questions %}
+        {% for question in page.object_list %}
             <div class="card question-card mb-3">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-auto">
                             <div class="vote-widget text-center">
-                                <button class="btn btn-sm btn-outline-success vote-btn like">▲</button>
+                                <button class="btn btn-sm btn-outline-success vote-btn like"
+                                        {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▲</button>
                                 <div class="vote-count fw-bold my-1">{{ question.rating }}</div>
-                                <button class="btn btn-sm btn-outline-danger vote-btn dislike">▼</button>
+                                <button class="btn btn-sm btn-outline-danger vote-btn dislike"
+                                        {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▼</button>
                             </div>
                         </div>
                         <div class="col">
@@ -28,17 +41,17 @@
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <span class="text-muted">
-                                        <i class="bi bi-chat"></i> Ответов: {{ question.answers.count }}
-                                    </span>
-                                    <span class="text-muted ms-3">
-                                        🏷️ Теги:
-                                        {% for tag in question.tags.all %}
-                                            <a href="{% url 'app:tag' tag.name %}" class="badge bg-secondary text-decoration-none">{{ tag.name }}</a>
-                                        {% endfor %}
+                                        💬 Ответов: {{ question.answers.count }}
                                     </span>
                                 </div>
                                 <div class="text-muted small">
-                                    <img src="{% static 'img/avatars/Man.png' %}" class="rounded-circle" width="24" height="24">
+                                    <img src="
+                                        {% if question.author.profile.avatar %}
+                                            {{ question.author.profile.avatar.url }}
+                                        {% else %}
+                                            {% static 'img/avatars/avatar-default.png' %}
+                                        {% endif %}
+                                    " class="rounded-circle" width="24" height="24">
                                     {{ question.author.username }} | {{ question.created_at|date:"d.m.Y H:i" }}
                                 </div>
                             </div>
@@ -48,7 +61,7 @@
             </div>
         {% empty %}
             <div class="alert alert-info text-center">
-                <h5>📭 Вопросов с тегом "{{ tag }}" не найдено</h5>
+                <h5>📭 Вопросов с тегом "{{ tag_name }}" не найдено</h5>
                 <a href="{% url 'app:index' %}" class="btn btn-primary mt-2">На главную</a>
             </div>
         {% endfor %}

@@ -3,56 +3,89 @@
 
 {% block title %}Задать вопрос{% endblock %}
 
+{% block navigation %}{% endblock %}
+
 {% block content %}
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Задать новый вопрос</h4>
-        </div>
-        <div class="card-body">
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    Пожалуйста, исправьте ошибки в форме.
-                </div>
-            {% endif %}
-            
-            <form method="post" action="{% url 'app:ask' %}">
-                {% csrf_token %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">✏️ Задать новый вопрос</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
                 
-                <div class="mb-3">
-                    <label for="title" class="form-label">Заголовок вопроса *</label>
-                    <input type="text" class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
-                           id="title" name="title" value="{{ form.title.value|default:'' }}"
-                           placeholder="Кратко опишите суть вопроса">
-                    <div class="form-text">Минимум 10 символов, максимум 200 символов.</div>
-                    {% if form.title.errors %}
-                        <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
-                    {% endif %}
-                </div>
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        Пожалуйста, исправьте ошибки в форме.
+                    </div>
+                {% endif %}
                 
-                <div class="mb-3">
-                    <label for="text" class="form-label">Текст вопроса *</label>
-                    <textarea class="form-control {% if form.text.errors %}is-invalid{% endif %}" 
-                              id="text" name="text" rows="6" 
-                              placeholder="Подробно опишите ваш вопрос...">{{ form.text.value|default:'' }}</textarea>
-                    <div class="form-text">Минимум 20 символов, максимум 5000 символов.</div>
-                    {% if form.text.errors %}
-                        <div class="invalid-feedback d-block">{{ form.text.errors.0 }}</div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    <label for="tags" class="form-label">Теги</label>
-                    <input type="text" class="form-control" id="tags" name="tags" 
-                           value="{{ form.tags.value|default:'' }}"
-                           placeholder="django, python, bootstrap">
-                    <div class="form-text">Укажите теги через запятую. Не более 5 тегов.</div>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{% url 'app:index' %}" class="btn btn-secondary">Отмена</a>
-                    <button type="submit" class="btn btn-primary">Опубликовать вопрос</button>
-                </div>
-            </form>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Поле title -->
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Заголовок *</label>
+                        {{ form.title }}
+                        {% if form.title.help_text %}
+                            <div class="form-text">{{ form.title.help_text }}</div>
+                        {% endif %}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Поле text -->
+                    <div class="mb-3">
+                        <label for="{{ form.text.id_for_label }}" class="form-label">Текст вопроса *</label>
+                        {{ form.text }}
+                        {% if form.text.help_text %}
+                            <div class="form-text">{{ form.text.help_text }}</div>
+                        {% endif %}
+                        {% if form.text.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.text.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Поле tags -->
+                    <div class="mb-3">
+                        <label for="{{ form.tags.id_for_label }}" class="form-label">Теги *</label>
+                        {{ form.tags }}
+                        {% if form.tags.help_text %}
+                            <div class="form-text">{{ form.tags.help_text }}</div>
+                        {% endif %}
+                        {% if form.tags.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.tags.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'app:index' %}" class="btn btn-secondary">Отмена</a>
+                        <button type="submit" class="btn btn-primary">Опубликовать вопрос</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+</div>
 {% endblock %}
