@@ -1,12 +1,33 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
+import os
+
+def user_avatar_path(instance, filename):
+    """Генерирует уникальный путь для аватарки"""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    return os.path.join('avatars', filename)
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-
+    avatar = models.ImageField(
+        upload_to=user_avatar_path,  # <-- используем функцию
+        null=True, 
+        blank=True,
+        validators=[
+            # Добавим валидаторы позже
+        ]
+    )
+    
     def __str__(self):
         return self.user.username
+    
+    def get_avatar_url(self):
+        """Возвращает URL аватарки или дефолтную"""
+        if self.avatar:
+            return self.avatar.url
+        return '/static/img/avatars/avatar-default.png'
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -69,3 +90,18 @@ class AnswerLike(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -> answer {self.answer.id} ({self.value})"
+    
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Создает профиль автоматически при создании пользователя"""
+    if created:
+        Profile.objects.get_or_create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Сохраняет профиль при сохранении пользователя"""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

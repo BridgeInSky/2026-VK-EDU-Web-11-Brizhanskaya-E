@@ -5,15 +5,15 @@
 
 {% block content %}
     <!-- САМ ВОПРОС -->
-    <div class="card mb-4">
+    <div class="card mb-4" data-question-id="{{ question.id }}">
         <div class="card-body">
             <div class="row">
                 <div class="col-auto">
-                    <div class="vote-widget text-center">
-                        <button class="btn btn-sm btn-outline-success vote-btn like" 
+                    <div class="vote-widget question-vote text-center">
+                        <button class="btn btn-sm {% if user.is_authenticated %}btn-outline-success{% else %}btn-secondary{% endif %} vote-btn like"
                                 {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▲</button>
                         <div class="vote-count fw-bold my-1">{{ question.rating }}</div>
-                        <button class="btn btn-sm btn-outline-danger vote-btn dislike"
+                        <button class="btn btn-sm {% if user.is_authenticated %}btn-outline-danger{% else %}btn-secondary{% endif %} vote-btn dislike"
                                 {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▼</button>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
                                 {% else %}
                                     {% static 'img/avatars/avatar-default.png' %}
                                 {% endif %}
-                            " class="rounded-circle" width="32" height="32">
+                            " class="rounded-circle" width="32" height="32" style="object-fit: cover;">
                             {{ question.author.username }} | {{ question.created_at|date:"d.m.Y H:i" }}
                         </div>
                     </div>
@@ -44,24 +44,32 @@
     </div>
 
     <!-- ОТВЕТЫ -->
-    <h3 class="mb-3">Ответы ({{ page.paginator.count }})</h3>
+    <h3 class="mb-3" id="answers-count-header">Ответы ({{ page.paginator.count }})</h3>
 
     <div class="answers-list mb-4">
         {% for answer in page.object_list %}
-            <div class="card mb-3" id="answer-{{ answer.id }}">
+            <div class="card mb-3" id="answer-{{ answer.id }}" data-answer-id="{{ answer.id }}">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-auto">
-                            <div class="vote-widget text-center">
-                                <button class="btn btn-sm btn-outline-success vote-btn like"
+                            <div class="vote-widget answer-vote text-center">
+                                <button class="btn btn-sm {% if user.is_authenticated %}btn-outline-success{% else %}btn-secondary{% endif %} vote-btn like"
                                         {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▲</button>
                                 <div class="vote-count fw-bold my-1">{{ answer.rating }}</div>
-                                <button class="btn btn-sm btn-outline-danger vote-btn dislike"
+                                <button class="btn btn-sm {% if user.is_authenticated %}btn-outline-danger{% else %}btn-secondary{% endif %} vote-btn dislike"
                                         {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▼</button>
                             </div>
-                            {% if answer.is_correct %}
+                            <!-- Кнопка правильного ответа (только для автора вопроса) -->
+                            {% if user == question.author %}
                                 <div class="mt-2 text-center">
-                                    <span class="badge bg-success">✓ Правильный ответ</span>
+                                    <button class="btn btn-sm {% if answer.is_correct %}btn-success{% else %}btn-outline-success{% endif %} mark-correct-btn w-100"
+                                            data-answer-id="{{ answer.id }}">
+                                        {% if answer.is_correct %}
+                                            ✓ Правильный
+                                        {% else %}
+                                            Отметить
+                                        {% endif %}
+                                    </button>
                                 </div>
                             {% endif %}
                         </div>
@@ -74,7 +82,7 @@
                                     {% else %}
                                         {% static 'img/avatars/avatar-default.png' %}
                                     {% endif %}
-                                " class="rounded-circle" width="24" height="24">
+                                " class="rounded-circle" width="24" height="24" style="object-fit: cover;">
                                 {{ answer.author.username }} | {{ answer.created_at|date:"d.m.Y H:i" }}
                             </div>
                         </div>
@@ -82,7 +90,7 @@
                 </div>
             </div>
         {% empty %}
-            <div class="alert alert-info">Ответов пока нет. Будьте первым, кто ответит!</div>
+            <div class="alert alert-info" id="empty-answers-alert">Ответов пока нет. Будьте первым, кто ответит!</div>
         {% endfor %}
     </div>
 
@@ -93,16 +101,7 @@
                 <h5 class="mb-0">✏️ Ваш ответ</h5>
             </div>
             <div class="card-body">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                
-                <form method="post" action="{% url 'app:answer_add' question.id %}">
+                <form method="post" action="{% url 'app:answer_add' question.id %}" id="answer-form-element">
                     {% csrf_token %}
                     <div class="mb-3">
                         {{ answer_form.text }}
@@ -132,4 +131,35 @@
 
     <!-- Пагинация ответов -->
     {% include 'pagination.html' with page=page %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <!-- Centrifugo для real-time обновлений -->
+    <script src="https://unpkg.com/centrifuge@5.0.2/dist/centrifuge.js"></script>
+    <script src="{% static 'js/centrifugo.js' %}"></script>
+    
+    <!-- Дополнительный скрипт для обновления счетчика ответов -->
+    <script>
+        // Функция для обновления счетчика ответов (будет вызвана из centrifugo.js)
+        window.updateAnswersCount = function() {
+            const headerElement = document.getElementById('answers-count-header');
+            if (headerElement) {
+                const match = headerElement.textContent.match(/\d+/);
+                if (match) {
+                    const currentCount = parseInt(match[0]);
+                    const newCount = currentCount + 1;
+                    headerElement.innerHTML = headerElement.innerHTML.replace(currentCount, newCount);
+                }
+            }
+        };
+        
+        // Функция для удаления сообщения "Ответов пока нет"
+        window.removeEmptyAlert = function() {
+            const emptyAlert = document.getElementById('empty-answers-alert');
+            if (emptyAlert) {
+                emptyAlert.remove();
+            }
+        };
+    </script>
 {% endblock %}

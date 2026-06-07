@@ -51,8 +51,8 @@ class SignupForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
-            # Создаем профиль для пользователя
-            Profile.objects.create(user=user)
+            # Используй get_or_create вместо create
+            Profile.objects.get_or_create(user=user)
         return user
 
 class ProfileForm(forms.ModelForm):

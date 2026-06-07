@@ -1,61 +1,11 @@
-# from django.shortcuts import render, get_object_or_404
-# from django.http import Http404
-# from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-# from .models import Question, Answer
-
-# def paginate(objects_list, request, per_page=10):
-#     paginator = Paginator(objects_list, per_page)
-#     page_number = request.GET.get('page', 1)
-    
-#     try:
-#         page = paginator.page(page_number)
-#     except PageNotAnInteger:
-#         page = paginator.page(1)
-#     except EmptyPage:
-#         page = paginator.page(paginator.num_pages)
-    
-#     return page
-
-# def index(request):
-#     questions = Question.objects.new()
-#     page = paginate(questions, request, per_page=10)
-#     return render(request, 'index.html', {'page': page, 'questions': page.object_list})
-
-# def hot(request):
-#     questions = Question.objects.best()
-#     page = paginate(questions, request, per_page=10)
-#     return render(request, 'hot.html', {'page': page, 'questions': page.object_list})
-
-# def tag_questions(request, tag_name):
-#     questions = Question.objects.by_tag(tag_name)
-#     if not questions.exists():
-#         raise Http404("Тег не найден")
-#     page = paginate(questions, request, per_page=10)
-#     return render(request, 'tag.html', {'tag': tag_name, 'page': page, 'questions': page.object_list})
-
-# def question_detail(request, question_id):
-#     question = get_object_or_404(Question.objects.select_related('author').prefetch_related('tags'), id=question_id)
-#     answers = question.answers.select_related('author')
-#     page = paginate(answers, request, per_page=5)
-#     return render(request, 'question.html', {'question': question, 'page': page, 'answers': page.object_list})
-
-# def ask(request):
-#     return render(request, 'ask.html')
-
-# def login_view(request):
-#     return render(request, 'login.html')
-
-# def signup_view(request):
-#     return render(request, 'signup.html')
-
-# def profile_view(request):
-#     return render(request, 'profile.html')
-
-
-
-
-
-
+import jwt
+import json
+from datetime import timedelta
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
@@ -69,6 +19,11 @@ from urllib.parse import urlparse, urlunparse
 
 from .models import Question, Answer, Tag
 from .forms import LoginForm, SignupForm, ProfileForm, AskForm, AnswerForm
+
+from django.core.cache import cache
+from .tasks import update_popular_tags, update_best_members, send_answer_notification, send_centrifugo_notification
+
+from django.db.models import Q
 
 def paginate(objects_list, request, per_page=10):
     """Функция пагинации"""
@@ -89,10 +44,9 @@ def index(request):
     questions = Question.objects.new()
     page = paginate(questions, request, per_page=10)
     
-    # Популярные теги для сайдбара
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
     return render(request, 'index.html', {
         'page': page,
@@ -104,9 +58,9 @@ def hot(request):
     questions = Question.objects.best()
     page = paginate(questions, request, per_page=10)
     
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
     return render(request, 'hot.html', {
         'page': page,
@@ -118,9 +72,9 @@ def tag_questions(request, tag_name):
     questions = Question.objects.by_tag(tag_name)
     page = paginate(questions, request, per_page=10)
     
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
     return render(request, 'tag.html', {
         'page': page,
@@ -134,11 +88,10 @@ def question_detail(request, question_id):
     answers = question.answers.all()
     page = paginate(answers, request, per_page=5)
     
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
-    # Форма для ответа (только для авторизованных)
     answer_form = AnswerForm() if request.user.is_authenticated else None
     
     return render(request, 'question.html', {
@@ -160,9 +113,9 @@ def ask(request):
     else:
         form = AskForm()
     
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
     return render(request, 'ask.html', {
         'form': form,
@@ -180,20 +133,24 @@ def answer_add(request, question_id):
             answer = form.save(question=question, author=request.user)
             messages.success(request, 'Ответ успешно добавлен!')
             
-            # Получаем номер страницы, на которой находится новый ответ
-            answers_list = question.answers.all()
-            paginator = Paginator(answers_list, 5)
-            # Находим страницу с новым ответом
-            page_num = 1
-            for i, page in enumerate(paginator.page_range, 1):
-                if answer in paginator.page(page).object_list:
-                    page_num = i
-                    break
+            if question.author != request.user and question.author.email:
+                send_answer_notification.delay(
+                    answer.id,
+                    question.author.email,
+                    question.title,
+                    question.author.username
+                )
             
-            # Редирект с якорем на ответ
-            return redirect(f"{reverse('app:question', args=[question.id])}?page={page_num}#answer-{answer.id}")
-    else:
-        return redirect('app:question', question_id=question.id)
+            send_centrifugo_notification.delay(
+                question.id,
+                answer.text,
+                request.user.username,
+                answer.id
+            )
+            
+            return redirect(f"{reverse('app:question', args=[question.id])}#answer-{answer.id}")
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     
     return redirect('app:question', question_id=question.id)
 
@@ -215,9 +172,7 @@ def login_view(request):
                 login(request, user)
                 messages.success(request, f'Добро пожаловать, {username}!')
                 
-                # Проверка next URL на безопасность
                 if next_url:
-                    # Разрешаем только относительные URL
                     parsed_url = urlparse(next_url)
                     if not parsed_url.netloc and not parsed_url.scheme:
                         return redirect(next_url)
@@ -227,9 +182,9 @@ def login_view(request):
     else:
         form = LoginForm()
     
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
     return render(request, 'login.html', {
         'form': form,
@@ -252,9 +207,9 @@ def signup_view(request):
     else:
         form = SignupForm()
     
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
     return render(request, 'signup.html', {
         'form': form,
@@ -273,9 +228,9 @@ def profile_view(request):
     else:
         form = ProfileForm(user=request.user, instance=request.user.profile)
     
-    popular_tags = Tag.objects.annotate(
-        question_count=models.Count('questions')
-    ).order_by('-question_count')[:10]
+    popular_tags = cache.get('popular_tags')
+    if popular_tags is None:
+        popular_tags = update_popular_tags()
     
     return render(request, 'profile.html', {
         'form': form,
@@ -286,9 +241,210 @@ def logout_view(request):
     """Выход пользователя"""
     logout(request)
     messages.info(request, 'Вы вышли из системы')
-    # Возвращаемся на предыдущую страницу
     next_url = request.GET.get('next', request.META.get('HTTP_REFERER', '/'))
     return redirect(next_url)
 
-# Добавляем импорт models в начало файла
 from django.db import models
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import QuestionLike, AnswerLike
+
+@login_required
+@require_POST
+def question_like(request, question_id):
+    """Лайк/дизлайк вопроса (AJAX)"""
+    try:
+        question = get_object_or_404(Question, id=question_id)
+        
+        # Пробуем получить данные из JSON или из POST
+        try:
+            data = json.loads(request.body)
+            action = data.get('action')
+        except:
+            action = request.POST.get('action')
+        
+        if action not in ['like', 'dislike']:
+            return JsonResponse({'error': 'Неверное действие'}, status=400)
+        
+        existing_like = QuestionLike.objects.filter(
+            user=request.user, 
+            question=question
+        ).first()
+        
+        new_value = 1 if action == 'like' else -1
+        
+        if existing_like:
+            if existing_like.value == new_value:
+                existing_like.delete()
+                new_rating = question.rating - new_value
+                question.rating = new_rating
+                question.save()
+                return JsonResponse({
+                    'status': 'removed',
+                    'new_rating': new_rating,
+                    'user_vote': None
+                })
+            else:
+                old_value = existing_like.value
+                existing_like.value = new_value
+                existing_like.save()
+                new_rating = question.rating - old_value + new_value
+                question.rating = new_rating
+                question.save()
+                return JsonResponse({
+                    'status': 'changed',
+                    'new_rating': new_rating,
+                    'user_vote': new_value
+                })
+        else:
+            QuestionLike.objects.create(
+                user=request.user,
+                question=question,
+                value=new_value
+            )
+            new_rating = question.rating + new_value
+            question.rating = new_rating
+            question.save()
+            return JsonResponse({
+                'status': 'added',
+                'new_rating': new_rating,
+                'user_vote': new_value
+            })
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def answer_like(request, answer_id):
+    """Лайк/дизлайк ответа (AJAX)"""
+    try:
+        answer = get_object_or_404(Answer, id=answer_id)
+        
+        try:
+            data = json.loads(request.body)
+            action = data.get('action')
+        except:
+            action = request.POST.get('action')
+        
+        if action not in ['like', 'dislike']:
+            return JsonResponse({'error': 'Неверное действие'}, status=400)
+        
+        existing_like = AnswerLike.objects.filter(
+            user=request.user, 
+            answer=answer
+        ).first()
+        
+        new_value = 1 if action == 'like' else -1
+        
+        if existing_like:
+            if existing_like.value == new_value:
+                existing_like.delete()
+                new_rating = answer.rating - new_value
+                answer.rating = new_rating
+                answer.save()
+                return JsonResponse({
+                    'status': 'removed',
+                    'new_rating': new_rating,
+                    'user_vote': None
+                })
+            else:
+                old_value = existing_like.value
+                existing_like.value = new_value
+                existing_like.save()
+                new_rating = answer.rating - old_value + new_value
+                answer.rating = new_rating
+                answer.save()
+                return JsonResponse({
+                    'status': 'changed',
+                    'new_rating': new_rating,
+                    'user_vote': new_value
+                })
+        else:
+            AnswerLike.objects.create(
+                user=request.user,
+                answer=answer,
+                value=new_value
+            )
+            new_rating = answer.rating + new_value
+            answer.rating = new_rating
+            answer.save()
+            return JsonResponse({
+                'status': 'added',
+                'new_rating': new_rating,
+                'user_vote': new_value
+            })
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def mark_correct(request, answer_id):
+    """Отметка правильного ответа (только автор вопроса)"""
+    try:
+        answer = get_object_or_404(Answer, id=answer_id)
+        question = answer.question
+        
+        if question.author != request.user:
+            return JsonResponse({'error': 'Только автор вопроса может отмечать правильный ответ'}, status=403)
+        
+        if answer.is_correct:
+            answer.is_correct = False
+            answer.save()
+            return JsonResponse({
+                'status': 'unmarked',
+                'is_correct': False
+            })
+        else:
+            question.answers.update(is_correct=False)
+            answer.is_correct = True
+            answer.save()
+            return JsonResponse({
+                'status': 'marked',
+                'is_correct': True
+            })
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+# ========== ПОЛНОТЕКСТОВЫЙ ПОИСК (одно определение) ==========
+from django.contrib.postgres.search import SearchVector, SearchQuery
+
+def search_api(request):
+    """API для полнотекстового поиска вопросов"""
+    query = request.GET.get('q', '').strip()
+    
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+    
+    questions = Question.objects.annotate(
+        search=SearchVector('title', 'text')
+    ).filter(search=SearchQuery(query))[:10]
+    
+    results = []
+    for q in questions:
+        preview = q.text[:150]
+        if query.lower() in preview.lower():
+            index = preview.lower().find(query.lower())
+            start = max(0, index - 30)
+            end = min(len(preview), index + 70)
+            preview = '...' + preview[start:end] + '...'
+        else:
+            preview = preview[:100] + '...'
+        
+        results.append({
+            'id': q.id,
+            'title': q.title,
+            'preview': preview,
+        })
+    
+    return JsonResponse({'results': results})
+
+@require_http_methods(["GET"])
+def get_centrifugo_token(request):
+    """Возвращает токен для подключения к Centrifugo"""
+    from datetime import datetime
+    
+    # Для client_insecure токен не нужен, но вернём пустой
+    return JsonResponse({'token': ''})

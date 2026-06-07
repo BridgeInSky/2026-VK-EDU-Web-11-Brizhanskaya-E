@@ -33,9 +33,14 @@
                 <!-- Поиск -->
                 <div class="col-md-6 col-lg-4 mb-3">
                     <form class="d-flex" role="search" method="get" action="{% url 'app:index' %}">
-                        <input class="form-control me-2" type="search" name="q" placeholder="Поиск вопросов...">
-                        <button class="btn btn-outline-light" type="submit">Найти</button>
-                    </form>
+                         <div class="position-relative w-100">
+                            <input class="form-control me-2" type="search" name="q" id="search-input" 
+                                placeholder="Поиск вопросов..." autocomplete="off" style="width: calc(100% - 80px);">
+                            <div id="search-suggestions" class="position-absolute bg-white border rounded shadow-sm" 
+                                style="display: none; z-index: 1000; width: calc(100% - 80px);"></div>
+                            </div>
+                            <button class="btn btn-outline-light" type="submit">Найти</button>
+                        </form>
                 </div>
                 
                 <!-- Юзерблок -->
@@ -51,7 +56,7 @@
                                 <img src="
                                     {% if user.is_authenticated and user.profile.avatar %}
                                         {{ user.profile.avatar.url }}
-                                    elif user.is_authenticated %}
+                                    {% elif user.is_authenticated %}
                                         {% static 'img/avatars/Man.png' %}
                                     {% else %}
                                         {% static 'img/avatars/avatar-default.png' %}
@@ -169,8 +174,16 @@
 
     <!-- Bootstrap JS (локальная копия) -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    
+    <!-- jQuery для AJAX -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
     <!-- Собственные скрипты -->
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/vote.js' %}"></script>
+    
     {% block extra_js %}{% endblock %}
+
+    <script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

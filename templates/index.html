@@ -6,15 +6,15 @@
 {% block content %}
     <div class="questions-list">
         {% for question in page.object_list %}
-            <div class="card question-card mb-3">
+            <div class="card question-card mb-3" data-question-id="{{ question.id }}">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-auto">
-                            <div class="vote-widget text-center">
-                                <button class="btn btn-sm btn-outline-success vote-btn like" 
+                            <div class="vote-widget question-vote text-center">
+                                <button class="btn btn-sm {% if user.is_authenticated %}btn-outline-success{% else %}btn-secondary{% endif %} vote-btn like"
                                         {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▲</button>
                                 <div class="vote-count fw-bold my-1">{{ question.rating }}</div>
-                                <button class="btn btn-sm btn-outline-danger vote-btn dislike"
+                                <button class="btn btn-sm {% if user.is_authenticated %}btn-outline-danger{% else %}btn-secondary{% endif %} vote-btn dislike"
                                         {% if not user.is_authenticated %}disabled title="Войдите, чтобы голосовать"{% endif %}>▼</button>
                             </div>
                         </div>

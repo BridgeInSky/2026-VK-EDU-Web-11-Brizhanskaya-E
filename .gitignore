@@ -1,5 +1,3 @@
-# Открой редактор и создай файл
-cat > .gitignore << 'EOF'
 # Python
 __pycache__/
 *.py[cod]
@@ -64,4 +62,15 @@ desktop.ini
 # Project specific
 media/
 staticfiles/
+
+# Local documentation and backups
+backups/
+*.txt
+*.png
+*.jpg
+*.md.backup
+centrifugo/
+Как\ запускать\ centrifugo.txt
+Как\ запускать\ проект.txt
+Снимок\ экрана*.png
 EOF
