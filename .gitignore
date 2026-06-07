@@ -1,23 +1,14 @@
-# Виртуальное окружение
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
 venv_new/
 env/
 ENV/
-env.bak/
-venv.bak/
-pythonenv*
-
-# Python-компиляция
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
+.venv
 
 # Django
 *.log
@@ -29,93 +20,57 @@ db.sqlite3-journal
 media/
 staticfiles/
 
-# Базы данных
-*.db
-*.sqlite3
-
-# Файлы IDE и редакторов
-.idea/
+# IDE
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
 .DS_Store
-.vscode/
-*.sublime-*
-.project
-.pydevproject
+Thumbs.db
 
-# Файлы окружения
+# Environment variables
 .env
 .env.local
-.env.*.local
 .env.docker
 
-# Логи
+# Database
+*.sqlite3
+*.sqlite3-journal
+
+# Uploads
+uploads/
+
+# Logs
 *.log
-logs/
-log/
-*.log
 
-# Временные файлы
-*.tmp
-*.temp
-*.bak
-*.cache
-
-# Файлы настроек пакетов
-*.egg-info/
-*.egg
-dist/
-build/
-eggs/
-parts/
-bin/
-var/
-sdist/
-develop-eggs/
-.installed.cfg
-lib/
-lib64/
-__pycache__/
-*.py[cod]
-
-# Jupyter Notebook
-.ipynb_checkpoints/
-
-# Файлы тестов
+# Testing
 .coverage
 htmlcov/
-.tox/
-.pytest_cache/
-.mypy_cache/
-.dmypy.json
-dmypy.json
 
-# Файлы систем
-Thumbs.db
-Desktop.ini
-*.DS_Store
+# Docker
+*.pid
 
-# Файлы загрузок и медиа (кроме примера)
-uploads/*
-!uploads/.gitkeep
-media/*
-!media/.gitkeep
+# Git
+*.orig
 
-# Секретные ключи
-*.key
-*.pem
-*.crt
-
-# Файлы настроек инструментов
-.tox/
-.mypy_cache/
-.ruff_cache/
-
-# Медиа файлы (пользовательские загрузки)
-media/
-
-# Системные файлы
+# OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Project specific
+media/
+staticfiles/
+
+# Local documentation and backups
+backups/
+*.txt
+*.png
+*.jpg
+*.md.backup
+centrifugo/
+Как\ запускать\ centrifugo.txt
+Как\ запускать\ проект.txt
+Снимок\ экрана*.png
+EOF

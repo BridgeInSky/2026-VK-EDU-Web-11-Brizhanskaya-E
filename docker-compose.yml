@@ -1,0 +1,135 @@
+# # version: '3.8'
+
+# # services:
+# #   redis:
+# #     image: redis:7-alpine
+# #     ports:
+# #       - "6379:6379"
+# #     volumes:
+# #       - redis_data:/data
+# #     restart: unless-stopped
+
+# #   centrifugo:
+# #     image: centrifugo/centrifugo:v5
+# #     ports:
+# #       - "8001:8000"
+# #     volumes:
+# #       - ./centrifugo:/centrifugo
+# #     command: centrifugo --config=/centrifugo/config.json
+# #     restart: unless-stopped
+
+# #   mailhog:
+# #     image: mailhog/mailhog
+# #     ports:
+# #       - "1025:1025"
+# #       - "8025:8025"
+# #     restart: unless-stopped
+
+# # volumes:
+# #   redis_data:
+
+
+# services:
+#   redis:
+#     image: redis:7-alpine
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redis_data:/data
+#     restart: unless-stopped
+
+#   centrifugo:
+#     image: centrifugo/centrifugo:v5
+#     ports:
+#       - "8001:8000"
+#     environment:
+#       - CENTRIFUGO_PORT=8000
+#       - CENTRIFUGO_ADMIN=true
+#       - CENTRIFUGO_ADMIN_PASSWORD=admin123
+#       - CENTRIFUGO_ADMIN_SECRET=admin_secret_123
+#       - CENTRIFUGO_CLIENT_ANONYMOUS=true
+#       - CENTRIFUGO_ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+#       - CENTRIFUGO_TOKEN_HMAC_SECRET_KEY=your-super-secret-centrifugo-key-minimum-32-chars-long
+#     command: >
+#       sh -c "echo '{
+#         \"port\": 8000,
+#         \"admin\": true,
+#         \"admin_password\": \"admin123\",
+#         \"admin_secret\": \"admin_secret_123\",
+#         \"client_anonymous\": true,
+#         \"namespaces\": [{\"name\": \"questions\", \"anonymous\": true, \"publish\": false, \"subscribe_to_publish\": true}],
+#         \"token_hmac_secret_key\": \"your-super-secret-centrifugo-key-minimum-32-chars-long\",
+#         \"allowed_origins\": [\"http://localhost:8000\", \"http://127.0.0.1:8000\"]
+#       }' > /tmp/config.json && centrifugo --config=/tmp/config.json"
+#     restart: unless-stopped
+
+#   mailhog:
+#     image: mailhog/mailhog
+#     ports:
+#       - "1025:1025"
+#       - "8025:8025"
+#     restart: unless-stopped
+
+# volumes:
+#   redis_data:
+
+
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ask_me_db
+    environment:
+      POSTGRES_DB: ask_me
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 04092014vfif
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - ask_me_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ask_me_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - ask_me_network
+
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    container_name: ask_me_centrifugo
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./centrifugo/config.json:/centrifugo/config.json:ro
+    command: centrifugo --config=/centrifugo/config.json
+    restart: unless-stopped
+    networks:
+      - ask_me_network
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ask_me_mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: unless-stopped
+    networks:
+      - ask_me_network
+
+volumes:
+  postgres_data:
+    name: ask_me_postgres_data
+  redis_data:
+    name: ask_me_redis_data
+
+networks:
+  ask_me_network:
+    name: ask_me_network
