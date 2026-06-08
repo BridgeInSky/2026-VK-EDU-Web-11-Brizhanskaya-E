@@ -13,6 +13,7 @@ colorama==0.4.6
 Django==5.1.5
 django-redis==5.4.0
 idna==3.10
+gunicorn==21.2.0
 kombu==5.4.2
 packaging==24.2
 prompt_toolkit==3.0.48
