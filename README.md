@@ -86,7 +86,7 @@ celery -A ask_pupkin_project beat --loglevel=info
 # 11. Запустить Django
 python manage.py runserver
 ```
-###Запуск с Nginx и Gunicorn (ДЗ7)
+### Запуск с Nginx и Gunicorn (ДЗ7)
 ```
 # 1. Запустить Nginx через Docker
 docker run -d --name ask_me_nginx -p 8080:8080 \
@@ -99,7 +99,8 @@ cd /mnt/c/Users/brizh/projects/ask_me
 source venv_wsl/bin/activate
 gunicorn -b 0.0.0.0:8000 ask_pupkin_project.wsgi:application
 ```
-###Структура проекта
+### Структура проекта
+```
 ask_me/
 ├── app/                       # Основное приложение
 │   ├── models.py              # Модели (Question, Answer, Tag, Profile)
@@ -120,6 +121,6 @@ ask_me/
 ├── docker-compose.yml         # Docker Compose для всех сервисов
 ├── requirements.txt           # Зависимости Python
 └── .env.example               # Пример переменных окружения
-
-###Результаты нагрузочного тестирования (ДЗ7)
+```
+### Результаты нагрузочного тестирования (ДЗ7)
 
