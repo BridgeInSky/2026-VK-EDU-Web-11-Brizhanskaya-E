@@ -124,3 +124,4 @@ ask_me/
 ```
 ### Результаты нагрузочного тестирования (ДЗ7)
 
+![Изображение](https://github.com/BridgeInSky/2026-VK-EDU-Web-11-Brizhanskaya-E/blob/master/Тесты%20nginx%20gunicorn%20.png)
